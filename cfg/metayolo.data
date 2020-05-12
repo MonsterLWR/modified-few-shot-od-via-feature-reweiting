@@ -1,0 +1,13 @@
+metayolo=1
+metain_type=2
+data=voc
+neg = 1
+rand = 0
+novel = data/voc_novels.txt
+novelid = 0
+# scale = 0
+meta = data/voc_traindict_full.txt
+train = D:\Code\Python\data\voc_few_shot\voc_train.txt
+valid = D:\Code\Python\data\voc_few_shot\2007_test.txt
+backup = backup/metayolo
+gpus=0
