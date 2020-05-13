@@ -170,7 +170,7 @@ class DarkMetaNet(nn.Module):
         return 'dynamic' in block and int(block['dynamic']) == 1
 
     def print_network(self):
-        print_cfg(self.blocks)
+        print_cfg(self.darknet_blocks)
         print('---------------------------------------------------------------------')
         print_cfg(self.learnet_blocks)
 

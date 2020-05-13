@@ -1,6 +1,7 @@
 import sys
 import dataset
 import torch.optim as optim
+import torch
 
 from utils import *
 from cfg import parse_cfg, cfg
@@ -100,7 +101,7 @@ test_metaloader = torch.utils.data.DataLoader(
     batch_size=test_metaset.batch_size,
     shuffle=False,
     num_workers=num_workers // 2,
-    pin_memory=True
+    pin_memory=False
 )
 
 # Adjust learning rate
@@ -191,20 +192,22 @@ def train(epoch):
     avg_time = torch.zeros(9)
     for batch_idx, (data, target) in enumerate(train_loader):
         metax, mask = metaloader.next()
+        learnet_x = torch.cat((metax, mask), dim=1)
         t2 = time.time()
         adjust_learning_rate(optimizer, processed_batches)
         processed_batches = processed_batches + 1
 
         if use_cuda:
             data = data.cuda()
-            metax = metax.cuda()
-            mask = mask.cuda()
+            # metax = metax.cuda()
+            # mask = mask.cuda()
+            learnet_x = learnet_x.cuda()
             # target= target.cuda()
         t3 = time.time()
         t4 = time.time()
         optimizer.zero_grad()
         t5 = time.time()
-        output = model(data, metax, mask)
+        output = model(data, learnet_x)
         t6 = time.time()
         region_loss.seen = region_loss.seen + data.data.size(0)
         loss = region_loss(output, target)

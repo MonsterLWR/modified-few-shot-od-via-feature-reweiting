@@ -2,11 +2,10 @@
 # encoding: utf-8
 import random
 import os
-import pdb
 import numpy as np
 from PIL import Image
 from PIL import ImageFile
-from old_cfg import cfg
+from cfg import cfg
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 

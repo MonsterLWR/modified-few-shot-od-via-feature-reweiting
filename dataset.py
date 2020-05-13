@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import Dataset
 from utils import is_dict, plot_boxes_cv2
 from image import *
-from old_cfg import cfg
+from cfg import cfg
 import pdb
 from torchvision import transforms
 
@@ -286,6 +286,8 @@ class MetaDataset(Dataset):
         # num_batch = factor * 500 * 64 * cfg.num_gpus // cfg.batch_size
         dataset_size = factor * 500 * 64
         num_batch = dataset_size // cfg.batch_size
+        print('shrink num_batch for debug! remember to change bach if training(in dataset.py)')
+        num_batch = 100
 
         meta_indexes = [[]] * len(self.classes)
         with open(meta_files, 'r') as f:

@@ -29,7 +29,9 @@ def neg_filter(pred_boxes, target, neg_ratio=3, withids=False):
             # sample a neg sample with probability ratio
             flags = [0 if f == 0 and random() > ratio else 1 for f in flags]
             inds = np.argwhere(flags).squeeze()
-            pred_boxes, target = pred_boxes[inds], target[inds]
+            pred_boxes = torch.index_select(pred_boxes, dim=0, index=torch.tensor(inds).cuda())
+            target = torch.index_select(target, dim=0, index=torch.tensor(inds))
+            # pred_boxes, target = pred_boxes[inds], target[inds]
     else:
         raise NotImplementedError('neg_ratio not recognized')
     if withids:
@@ -296,16 +298,17 @@ class RegionLossV2(nn.Module):
 
         t3 = time.time()
         # loss_x = self.coord_scale * nn.MSELoss()(x * coord_mask, tx * coord_mask) / 2.0
-        loss_x = self.coord_scale * nn.BCELoss()(x * coord_mask, tx * coord_mask)
+        loss_x = self.coord_scale * nn.BCELoss(reduction='sum')(x * coord_mask, tx * coord_mask)
         # loss_y = self.coord_scale * nn.MSELoss()(y * coord_mask, ty * coord_mask) / 2.0
-        loss_y = self.coord_scale * nn.BCELoss()(y * coord_mask, ty * coord_mask)
-        loss_w = self.coord_scale * nn.MSELoss()(w * coord_mask, tw * coord_mask) / 2.0
-        loss_h = self.coord_scale * nn.MSELoss()(h * coord_mask, th * coord_mask) / 2.0
+        loss_y = self.coord_scale * nn.BCELoss(reduction='sum')(y * coord_mask, ty * coord_mask)
+        loss_w = self.coord_scale * nn.MSELoss(reduction='sum')(w * coord_mask, tw * coord_mask) / 2.0
+        loss_h = self.coord_scale * nn.MSELoss(reduction='sum')(h * coord_mask, th * coord_mask) / 2.0
         # loss_conf = nn.MSELoss(size_average=False)(conf * conf_mask, tconf * conf_mask) / 2.0
-        loss_conf = nn.BCELoss()(conf * conf_mask, tconf * conf_mask)
-        loss_cls = self.class_scale * nn.CrossEntropyLoss()(cls, tcls)
+        loss_conf = nn.BCELoss(reduction='sum')(conf * conf_mask, tconf * conf_mask)
+        loss_cls = self.class_scale * nn.CrossEntropyLoss(reduction='sum')(cls, tcls)
 
         loss = loss_x + loss_y + loss_w + loss_h + loss_conf + loss_cls
+        loss = loss / batch_size
         t4 = time.time()
 
         if self.show_time:
